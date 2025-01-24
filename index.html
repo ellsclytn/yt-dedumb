@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT DeDumbulator</title>
+</head>
+<body>
+    <h1>YT DeDumbulator</h1>
+    <p>Enter a video URL to see it dedumbulated:</p>
+    <input type="text" id="ytUrl" placeholder="Enter YouTube URL">
+    <p>Normalized URL:</p>
+    <a id="outputLink" href="#">Invalid URL</a>
+    <script>
+        const outputLink = document.getElementById('outputLink');
+        const inputField = document.getElementById('ytUrl');
+        inputField.addEventListener('input', function() {
+            parseYtUrl(this.value);
+        });
+
+        function parseYtUrl(input) {
+            try {
+                const url = new URL(input);
+                let videoId = '';
+                let timeParam = url.searchParams.get('t');
+
+                if (url.hostname === 'youtu.be') {
+                    videoId = url.pathname.slice(1);
+                } else if (url.hostname.includes('youtube.com')) {
+                    if (url.pathname === '/watch') {
+                        videoId = url.searchParams.get('v');
+                    } else if (url.pathname.startsWith('/shorts/')) {
+                        videoId = url.pathname.split('/')[2];
+                    }
+                }
+
+                if (videoId) {
+                    let outputUrl = `https://youtube.com/watch?v=${videoId}`;
+                    if (timeParam) {
+                        outputUrl += `&t=${timeParam}`;
+                    }
+                    outputLink.textContent = outputUrl;
+                    outputLink.href = outputUrl;
+                } else {
+                    throw new Error('Invalid URL');
+                }
+            } catch (e) {
+                outputLink.textContent = 'Invalid URL';
+                outputLink.href = '#';
+            }
+        }
+    </script>
+</body>
+</html>
