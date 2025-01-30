@@ -11,43 +11,73 @@
     <h1>YT DeDumbulator</h1>
     <p>Enter a video URL to see it dedumbulated:</p>
     <input type="text" id="ytUrl" placeholder="Enter YouTube URL" autofocus>
-    <p>Normalized URL:</p>
-    <a id="outputLink" href="#">Invalid URL</a>
+    <button id="clearBtn">Clear</button>
+    <p>Normalized URL: <a id="outputLink" href="#" target="_blank">Invalid input URL</a></p>
+    <button id="copyBtn" style="display: none;">Copy</button>
+    <p id="actionStatus"></p>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const queryString = window.location.search;
             if (queryString.startsWith('?url=')) {
                 const encodedUrl = queryString.substring(5);
                 const decodedUrl = decodeURIComponent(encodedUrl);
-                parseQueryParam(decodedUrl)
+                parseQueryParam(decodedUrl);
             }
         });
 
-        // Input field logic
-        const outputLink = document.getElementById('outputLink');
+        const actionStatus = document.getElementById('actionStatus');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
         const inputField = document.getElementById('ytUrl');
+        const outputLink = document.getElementById('outputLink');
+
         inputField.addEventListener('input', function () {
-            renderUrl(this.value)
+            renderUrl(this.value);
+        });
+
+        clearBtn.addEventListener('click', function () {
+            inputField.value = '';
+            outputLink.textContent = 'Invalid URL';
+            outputLink.href = '#';
+            copyBtn.style.display = 'none';
+            actionStatus.textContent = '';
+        });
+
+        copyBtn.addEventListener('click', function () {
+            if (outputLink.href !== '#' && outputLink.textContent !== 'Invalid URL') {
+                navigator.clipboard.writeText(outputLink.href).then(() => {
+                    actionStatus.textContent = 'Copied to clipboard!';
+                }).catch(err => {
+                    actionStatus.textContent = 'Failed to copy';
+                });
+            }
         });
 
         function parseQueryParam(inputUrl) {
             try {
-                const outputUrl = parseYtUrl(inputUrl)
-                window.location.href = outputUrl
+                const outputUrl = parseYtUrl(inputUrl);
+                window.location.href = outputUrl;
             } catch (e) {
-                outputLink.textContent = `Invalid URL in query parameter: ${inputUrl}`;
+                outputLink.textContent = `Invalid URL in query parameter`;
                 outputLink.href = '#';
             }
         }
 
         function renderUrl(inputUrl) {
+            actionStatus.textContent = '';
+
             try {
-                const outputUrl = parseYtUrl(inputUrl)
+                const outputUrl = parseYtUrl(inputUrl);
                 outputLink.textContent = outputUrl;
                 outputLink.href = outputUrl;
+
+                copyBtn.style.display = 'inline-block';
             } catch (e) {
-                outputLink.textContent = `Invalid URL: ${inputUrl}`;
+                outputLink.textContent = `Invalid URL`;
                 outputLink.href = '#';
+
+                copyBtn.style.display = 'none';
             }
         }
 
@@ -71,7 +101,7 @@
                 if (timeParam) {
                     outputUrl += `&t=${timeParam}`;
                 }
-                return outputUrl
+                return outputUrl;
             } else {
                 throw new Error('Invalid URL');
             }
